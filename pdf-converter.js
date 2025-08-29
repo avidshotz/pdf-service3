@@ -197,6 +197,7 @@ async function convertHTMLToPDF(htmlContent, outputPath, options = {}) {
  * 1. Checking if the HTML is a complete document or needs wrapping
  * 2. Adding professional CSS styling with Liberation Serif font
  * 3. Optionally rendering HTML code blocks as actual HTML previews
+ * 4. Fixing centering issues by removing interfering wrapper divs
  * 
  * The function handles both complete HTML documents and partial HTML fragments,
  * ensuring consistent styling and typography in the final PDF.
@@ -214,6 +215,10 @@ async function convertHTMLToPDF(htmlContent, outputPath, options = {}) {
  */
 function processHTMLContent(htmlContent, config) {
     console.log('🎨 Processing HTML content...');
+
+    // Fix centering issues by removing interfering wrapper divs
+    console.log('🔧 Fixing centering issues...');
+    htmlContent = fixCenteringIssues(htmlContent);
 
     // Check if the HTML already has a complete document structure
     // This regex checks for the presence of HTML, head, and body tags
@@ -428,6 +433,72 @@ function generateCSS(config) {
 }
 
 /**
+ * Fixes centering issues by removing interfering wrapper divs
+ * 
+ * This function detects and removes wrapper divs that prevent proper centering
+ * of content. It looks for patterns where a wrapper div contains a child div
+ * with centering styles (like margin: auto) and removes the wrapper to allow
+ * the centering to work properly.
+ * 
+ * Common patterns it fixes:
+ * - <div class="content"><div style="margin: auto">...</div></div>
+ * - <div><div style="margin: 0 auto">...</div></div>
+ * - Any wrapper div that contains a div with auto margins
+ * 
+ * @param {string} htmlContent - HTML content to process
+ * @returns {string} - HTML content with centering issues fixed
+ * 
+ * @example
+ * // Input: <div class="content"><div style="margin: auto">Centered content</div></div>
+ * // Output: <div style="margin: auto">Centered content</div>
+ */
+function fixCenteringIssues(htmlContent) {
+    // Pattern to match wrapper divs that contain divs with auto margins
+    // This regex looks for a div that contains another div with margin: auto or margin: 0 auto
+    const centeringPattern = /<div[^>]*class\s*=\s*["']content["'][^>]*>\s*(<div[^>]*style\s*=\s*["'][^"']*margin\s*:\s*[^"']*auto[^"']*["'][^>]*>[\s\S]*?<\/div>)\s*<\/div>/gi;
+    
+    // Also match any wrapper div that contains a div with auto margins (more general pattern)
+    const generalCenteringPattern = /<div[^>]*>\s*(<div[^>]*style\s*=\s*["'][^"']*margin\s*:\s*[^"']*auto[^"']*["'][^>]*>[\s\S]*?<\/div>)\s*<\/div>/gi;
+    
+    let fixedContent = htmlContent;
+    
+    // First, try to match the specific "content" class pattern
+    if (centeringPattern.test(fixedContent)) {
+        console.log('🎯 Found wrapper div with "content" class interfering with centering - removing it');
+        fixedContent = fixedContent.replace(centeringPattern, '$1');
+    }
+    
+    // Then check for general wrapper divs that might interfere with centering
+    // We need to be more careful with this pattern to avoid removing legitimate nested divs
+    const generalMatches = fixedContent.match(generalCenteringPattern);
+    if (generalMatches) {
+        // Only remove wrapper divs if they don't have meaningful styling or content
+        // and if the inner div has clear centering styles
+        fixedContent = fixedContent.replace(generalCenteringPattern, (match, innerDiv) => {
+            // Check if the wrapper div has minimal or no styling
+            const wrapperDiv = match.replace(innerDiv, '').replace(/<\/div>$/, '');
+            const hasMinimalStyling = !wrapperDiv.includes('style=') || 
+                                    wrapperDiv.includes('style=""') || 
+                                    wrapperDiv.includes("style=''");
+            
+            // Check if the inner div has clear centering styles
+            const hasCenteringStyles = innerDiv.includes('margin:') && 
+                                     (innerDiv.includes('auto') || innerDiv.includes('center'));
+            
+            if (hasMinimalStyling && hasCenteringStyles) {
+                console.log('🎯 Found interfering wrapper div - removing it to fix centering');
+                return innerDiv;
+            }
+            
+            // Keep the original if the wrapper has meaningful styling
+            return match;
+        });
+    }
+    
+    return fixedContent;
+}
+
+/**
  * Renders HTML code blocks as actual HTML in the document
  * 
  * This function finds <pre><code> blocks that contain HTML markup and renders them
@@ -605,7 +676,8 @@ module.exports = {
     convertHTMLToPDF,      // Main conversion function
     processHTMLContent,    // HTML processing function
     generateCSS,          // CSS generation function
-    renderHTMLCodeBlocks  // Code block rendering function
+    renderHTMLCodeBlocks, // Code block rendering function
+    fixCenteringIssues    // Centering issue fix function
 };
 
 // Run the CLI if this file is executed directly (not imported as a module)
