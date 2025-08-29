@@ -20,7 +20,7 @@
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
-    "puppeteer": "^21.0.0"
+    "puppeteer": "^21.11.0"
   },
   "engines": {
     "node": ">=14.0.0"
@@ -34,4 +34,3 @@
   },
   "homepage": "https://github.com/yourusername/html-to-pdf-converter#readme"
 }
-

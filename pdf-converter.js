@@ -155,10 +155,10 @@ async function convertHTMLToPDF(htmlContent, outputPath, options = {}) {
             format: config.pageSize, // Page size (A4, Letter, etc.)
             landscape: config.orientation === 'landscape', // Convert orientation to boolean
             margin: {
-                top: `${config.margin}mm`, // Top margin
-                right: `${config.margin}mm`, // Right margin
-                bottom: `${config.margin}mm`, // Bottom margin
-                left: `${config.margin}mm` // Left margin
+                top: '0mm', // Set to 0 to allow CSS centering to work properly
+                right: '0mm', // Set to 0 to allow CSS centering to work properly
+                bottom: '0mm', // Set to 0 to allow CSS centering to work properly
+                left: '0mm' // Set to 0 to allow CSS centering to work properly
             },
             printBackground: true, // Include background colors and images in PDF
             preferCSSPageSize: true, // Use CSS page size if available in the HTML
@@ -216,6 +216,14 @@ async function convertHTMLToPDF(htmlContent, outputPath, options = {}) {
 function processHTMLContent(htmlContent, config) {
     console.log('🎨 Processing HTML content...');
 
+    // Check if the HTML has custom styling - if so, skip all processing
+    const hasCustomStyling = htmlContent.includes('<style>') || htmlContent.includes('class=');
+    if (hasCustomStyling) {
+        console.log('📋 HTML has custom styling - bypassing all processing to preserve layout');
+        // Skip all processing and return the HTML as-is
+        return htmlContent;
+    }
+    
     // Fix centering issues by removing interfering wrapper divs
     console.log('🔧 Fixing centering issues...');
     htmlContent = fixCenteringIssues(htmlContent);
@@ -245,10 +253,17 @@ function processHTMLContent(htmlContent, config) {
 </body>
 </html>`;
     } else {
-        // It's a complete HTML document, just inject our CSS into the head section
-        console.log('📋 Adding CSS to existing HTML document...');
-        processedHTML = htmlContent.replace('</head>', `${generateCSS(config)}
+        // It's a complete HTML document, check if it has custom styling
+        const hasCustomStyling = htmlContent.includes('<style>') || htmlContent.includes('class=');
+        if (hasCustomStyling) {
+            console.log('📋 HTML has custom styling - skipping CSS injection to preserve layout');
+            processedHTML = htmlContent;
+        } else {
+            // It's a complete HTML document, just inject our CSS into the head section
+            console.log('📋 Adding CSS to existing HTML document...');
+            processedHTML = htmlContent.replace('</head>', `${generateCSS(config)}
 </head>`);
+        }
     }
 
     // Optionally render HTML code blocks as actual HTML previews
@@ -308,7 +323,8 @@ function generateCSS(config) {
             font-family: ${config.includeFonts ? "'Liberation Serif', 'Times New Roman', 'Georgia', serif" : "'Times New Roman', 'Georgia', serif"} !important;
             font-size: 12pt; /* Standard document font size */
             line-height: 1.4; /* Comfortable reading line height */
-            margin: ${config.margin}mm; /* Apply configured margins */
+            margin: 0; /* Remove body margin to allow proper centering */
+            padding: 0; /* Remove body padding to allow proper centering */
             color: #333; /* Dark gray for good readability */
             background: white; /* Clean white background */
         }
@@ -334,8 +350,20 @@ function generateCSS(config) {
         
         /* Apply consistent font family to all text elements */
         /* This ensures typography consistency throughout the document */
-        p, div, span, li, td, th {
+        /* But preserve flexbox and centering styles */
+        p, span, li, td, th {
             font-family: ${config.includeFonts ? "'Liberation Serif', 'Times New Roman', 'Georgia', serif" : "'Times New Roman', 'Georgia', serif"} !important;
+        }
+        
+        /* Preserve flexbox and centering styles on divs */
+        div {
+            font-family: ${config.includeFonts ? "'Liberation Serif', 'Times New Roman', 'Georgia', serif" : "'Times New Roman', 'Georgia', serif"} !important;
+        }
+        
+        /* Ensure flexbox centering works properly */
+        div[style*="display: flex"], div[style*="justify-content: center"] {
+            display: flex !important;
+            justify-content: center !important;
         }
         
         /* Code blocks styling for technical content */
@@ -417,7 +445,7 @@ function generateCSS(config) {
         @media print {
             body {
                 margin: 0; /* Remove body margins for print */
-                padding: ${config.margin}mm; /* Apply margins as padding */
+                padding: 0; /* Remove body padding to allow proper centering */
             }
             
             /* Ensure good contrast and color accuracy for printing */
@@ -453,19 +481,50 @@ function generateCSS(config) {
  * // Output: <div style="margin: auto">Centered content</div>
  */
 function fixCenteringIssues(htmlContent) {
+    console.log('🔍 Debug: Starting fixCenteringIssues function');
+    console.log('🔍 Debug: Looking for content wrapper divs...');
+    
     // Pattern to match wrapper divs that contain divs with auto margins
-    // This regex looks for a div that contains another div with margin: auto or margin: 0 auto
+    // This regex looks for a div that contains another div with margin: auto, margin: 0 auto, or margin: 40px auto
+    // Made the pattern more flexible to handle different spacing and quote styles
     const centeringPattern = /<div[^>]*class\s*=\s*["']content["'][^>]*>\s*(<div[^>]*style\s*=\s*["'][^"']*margin\s*:\s*[^"']*auto[^"']*["'][^>]*>[\s\S]*?<\/div>)\s*<\/div>/gi;
+    
+    // Let's also try a simpler approach - just remove the content wrapper div
+    const simpleContentPattern = /<div[^>]*class\s*=\s*["']content["'][^>]*>([\s\S]*?)<\/div>/gi;
     
     // Also match any wrapper div that contains a div with auto margins (more general pattern)
     const generalCenteringPattern = /<div[^>]*>\s*(<div[^>]*style\s*=\s*["'][^"']*margin\s*:\s*[^"']*auto[^"']*["'][^>]*>[\s\S]*?<\/div>)\s*<\/div>/gi;
     
     let fixedContent = htmlContent;
     
+    // Check if the HTML contains the content class
+    if (htmlContent.includes('class="content"')) {
+        console.log('🔍 Debug: Found class="content" in HTML');
+    } else {
+        console.log('🔍 Debug: No class="content" found in HTML');
+    }
+    
+    // Check if the HTML contains margin: auto
+    if (htmlContent.includes('margin:') && htmlContent.includes('auto')) {
+        console.log('🔍 Debug: Found margin: auto pattern in HTML');
+    } else {
+        console.log('🔍 Debug: No margin: auto pattern found in HTML');
+    }
+    
     // First, try to match the specific "content" class pattern
     if (centeringPattern.test(fixedContent)) {
         console.log('🎯 Found wrapper div with "content" class interfering with centering - removing it');
         fixedContent = fixedContent.replace(centeringPattern, '$1');
+    } else {
+        console.log('🔍 Debug: No match found for content class pattern');
+        
+        // Try the simpler approach - just remove the content wrapper div
+        if (simpleContentPattern.test(fixedContent)) {
+            console.log('🎯 Found content wrapper div - removing it with simple pattern');
+            fixedContent = fixedContent.replace(simpleContentPattern, '$1');
+        } else {
+            console.log('🔍 Debug: No match found for simple content pattern either');
+        }
     }
     
     // Then check for general wrapper divs that might interfere with centering

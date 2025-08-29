@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Centering Solutions Test</title>
+</head>
+<body>
+    <!-- SOLUTION 1: Use text-align: center on body -->
+    <div style="text-align: center;">
+        <div style="display: inline-block; text-align: left; max-width: 750px; margin: 40px 0;">
+            <h1>Solution 1: Text-align center</h1>
+            <p>This uses text-align: center on a wrapper and inline-block on the content.</p>
+        </div>
+    </div>
+
+    <!-- SOLUTION 2: Use flexbox centering -->
+    <div style="display: flex; justify-content: center; margin: 40px 0;">
+        <div style="max-width: 750px;">
+            <h1>Solution 2: Flexbox centering</h1>
+            <p>This uses flexbox with justify-content: center.</p>
+        </div>
+    </div>
+
+    <!-- SOLUTION 3: Use CSS Grid centering -->
+    <div style="display: grid; place-items: center; margin: 40px 0;">
+        <div style="max-width: 750px;">
+            <h1>Solution 3: CSS Grid centering</h1>
+            <p>This uses CSS Grid with place-items: center.</p>
+        </div>
+    </div>
+
+    <!-- SOLUTION 4: Use calc() with left positioning -->
+    <div style="position: relative; width: 100%;">
+        <div style="position: absolute; left: 50%; transform: translateX(-50%); max-width: 750px; margin: 40px 0;">
+            <h1>Solution 4: Transform centering</h1>
+            <p>This uses absolute positioning with transform: translateX(-50%).</p>
+        </div>
+    </div>
+
+    <!-- SOLUTION 5: Use margin auto with explicit width -->
+    <div style="width: 100%;">
+        <div style="width: 750px; margin: 40px auto;">
+            <h1>Solution 5: Fixed width with margin auto</h1>
+            <p>This uses a fixed width instead of max-width with margin auto.</p>
+        </div>
+    </div>
+</body>
+</html>
