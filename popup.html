@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML to PDF Converter</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <h2>HTML to PDF Converter</h2>
+        
+        <div class="option-group">
+            <label for="pageSize">Page Size:</label>
+            <select id="pageSize">
+                <option value="A4">A4</option>
+                <option value="Letter">Letter</option>
+                <option value="Legal">Legal</option>
+                <option value="A3">A3</option>
+            </select>
+        </div>
+
+        <div class="option-group">
+            <label for="orientation">Orientation:</label>
+            <select id="orientation">
+                <option value="portrait">Portrait</option>
+                <option value="landscape">Landscape</option>
+            </select>
+        </div>
+
+        <div class="option-group">
+            <label for="margin">Margin (mm):</label>
+            <input type="number" id="margin" value="10" min="0" max="50">
+        </div>
+
+        <div class="option-group">
+            <label for="filename">Filename:</label>
+            <input type="text" id="filename" placeholder="document.pdf">
+        </div>
+
+        <div class="tab-container">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="page">Page</button>
+                <button class="tab-btn" data-tab="html">HTML Input</button>
+            </div>
+            
+            <div class="tab-content">
+                <div id="page-tab" class="tab-pane active">
+                    <div class="info-box">
+                        <p><strong>Note:</strong> Works on regular websites. For Chrome pages or restricted sites, use the HTML Input tab.</p>
+                    </div>
+                                                <div class="button-group">
+                                <button id="convertCurrentPage" class="btn primary">📄 Convert Current Page</button>
+                                <button id="convertSelection" class="btn secondary">✂️ Convert Selection</button>
+                            </div>
+                </div>
+                
+                <div id="html-tab" class="tab-pane">
+                    <div class="option-group">
+                        <label for="htmlInput">Paste HTML Code:</label>
+                        <textarea id="htmlInput" placeholder="<html><body><h1>Hello World</h1><p>This is a test.</p></body></html>" rows="8"></textarea>
+                    </div>
+                                                <div class="button-group">
+                                <button id="convertHTML" class="btn primary">🔄 Convert HTML to PDF</button>
+                                <button id="clearHTML" class="btn secondary">🗑️ Clear</button>
+                            </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="status" class="status"></div>
+    </div>
+    
+    <script src="popup.js"></script>
+</body>
+</html>

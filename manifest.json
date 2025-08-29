@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "HTML to PDF Converter",
+  "version": "1.0.0",
+  "description": "Convert HTML content to PDF and download it",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "tabs",
+    "downloads"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["html2canvas.min.js", "jspdf.umd.min.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Convert to PDF"
+  }
+}

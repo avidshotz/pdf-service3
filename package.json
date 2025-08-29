@@ -1,0 +1,37 @@
+{
+  "name": "html-to-pdf-converter",
+  "version": "1.0.0",
+  "description": "A standalone Node.js module for converting HTML content to PDF files with professional styling",
+  "main": "pdf-converter.js",
+  "scripts": {
+    "start": "node pdf-converter.js",
+    "test": "node test-converter.js",
+    "example": "node example-usage.js"
+  },
+  "keywords": [
+    "pdf",
+    "html",
+    "converter",
+    "puppeteer",
+    "nodejs",
+    "liberation-serif",
+    "typography"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^21.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/html-to-pdf-converter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/html-to-pdf-converter/issues"
+  },
+  "homepage": "https://github.com/yourusername/html-to-pdf-converter#readme"
+}
+
